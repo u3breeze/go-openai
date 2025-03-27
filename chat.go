@@ -196,7 +196,6 @@ type ChatMessagePart struct {
 	AudioURL *ChatMessageAudioURL `json:"input_audio,omitempty"`
 	VideoURL *ChatMessageVideoURL `json:"video_url,omitempty"`
 	Video    []string             `json:"video,omitempty"`
-	paramUnion
 }
 
 type ChatCompletionMessage struct {
@@ -353,7 +352,7 @@ type ChatCompletionRequest struct {
 	TopLogProbs int    `json:"top_logprobs,omitempty"`
 	User        string `json:"user,omitempty"`
 
-	Audio ChatCompletionAudioParam `json:"audio,omitempty"`
+	Audio *ChatCompletionAudioParam `json:"audio,omitempty"`
 	// Deprecated: use Tools instead.
 	Functions []FunctionDefinition `json:"functions,omitempty"`
 	// Deprecated: use ToolChoice instead.
