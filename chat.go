@@ -484,7 +484,7 @@ type ChatCompletionResponse struct {
 	Usage               Usage                  `json:"usage"`
 	SystemFingerprint   string                 `json:"system_fingerprint"`
 	PromptFilterResults []PromptFilterResult   `json:"prompt_filter_results,omitempty"`
-
+	Metadata            map[string]string      `json:"metadata,omitempty"`
 	httpHeader
 }
 
