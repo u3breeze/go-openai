@@ -196,6 +196,7 @@ type ChatMessagePart struct {
 	AudioURL *ChatMessageAudioURL `json:"input_audio,omitempty"`
 	VideoURL *ChatMessageVideoURL `json:"video_url,omitempty"`
 	Video    []string             `json:"video,omitempty"`
+	Audio    *ChatCompletionAudio `json:"audio,omitempty"`
 }
 
 type ChatCompletionMessage struct {
@@ -391,7 +392,6 @@ type ChatCompletionRequest struct {
 	// Such as think mode for qwen3. "chat_template_kwargs": {"enable_thinking": false}
 	// https://qwen.readthedocs.io/en/latest/deployment/vllm.html#thinking-non-thinking-modes
 	ChatTemplateKwargs map[string]any `json:"chat_template_kwargs,omitempty"`
-
 }
 
 type StreamOptions struct {
