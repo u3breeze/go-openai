@@ -3,8 +3,8 @@ package openai
 import (
 	"bytes"
 	"context"
+	"io"
 	"net/http"
-	"os"
 	"strconv"
 )
 
@@ -134,13 +134,13 @@ func (c *Client) CreateImage(ctx context.Context, request ImageRequest) (respons
 
 // ImageEditRequest represents the request structure for the image API.
 type ImageEditRequest struct {
-	Image      *os.File `json:"image,omitempty"`
-	Mask       *os.File `json:"mask,omitempty"`
-	Prompt     string   `json:"prompt,omitempty"`
-	Background string   `json:"background,omitempty"`
-	Model      string   `json:"model,omitempty"`
-	N          int      `json:"n,omitempty"`
-	Size       string   `json:"size,omitempty"`
+	Image      io.Reader `json:"image,omitempty"`
+	Mask       io.Reader `json:"mask,omitempty"`
+	Prompt     string    `json:"prompt,omitempty"`
+	Background string    `json:"background,omitempty"`
+	Model      string    `json:"model,omitempty"`
+	N          int       `json:"n,omitempty"`
+	Size       string    `json:"size,omitempty"`
 	//ResponseFormat string    `json:"response_format,omitempty"`
 	Quality string `json:"quality,omitempty"`
 	User    string `json:"user,omitempty"`
@@ -152,7 +152,7 @@ func (c *Client) CreateEditImage(ctx context.Context, request ImageEditRequest) 
 	builder := c.createFormBuilder(body)
 
 	// image, filename is not required
-	err = builder.CreateFormFile("image", request.Image)
+	err = builder.CreateFormFileReader("image", request.Image, "")
 	if err != nil {
 		return
 	}
@@ -160,7 +160,7 @@ func (c *Client) CreateEditImage(ctx context.Context, request ImageEditRequest) 
 	// mask, it is optional
 	if request.Mask != nil {
 		// mask, filename is not required
-		err = builder.CreateFormFile("mask", request.Mask)
+		err = builder.CreateFormFileReader("mask", request.Mask, "")
 		if err != nil {
 			return
 		}
@@ -212,12 +212,12 @@ func (c *Client) CreateEditImage(ctx context.Context, request ImageEditRequest) 
 
 // ImageVariRequest represents the request structure for the image API.
 type ImageVariRequest struct {
-	Image          *os.File `json:"image,omitempty"`
-	Model          string   `json:"model,omitempty"`
-	N              int      `json:"n,omitempty"`
-	Size           string   `json:"size,omitempty"`
-	ResponseFormat string   `json:"response_format,omitempty"`
-	User           string   `json:"user,omitempty"`
+	Image          io.Reader `json:"image,omitempty"`
+	Model          string    `json:"model,omitempty"`
+	N              int       `json:"n,omitempty"`
+	Size           string    `json:"size,omitempty"`
+	ResponseFormat string    `json:"response_format,omitempty"`
+	User           string    `json:"user,omitempty"`
 }
 
 // CreateVariImage - API call to create an image variation. This is the main endpoint of the DALL-E API.
@@ -227,7 +227,7 @@ func (c *Client) CreateVariImage(ctx context.Context, request ImageVariRequest) 
 	builder := c.createFormBuilder(body)
 
 	// image, filename is not required
-	err = builder.CreateFormFile("image", request.Image)
+	err = builder.CreateFormFileReader("image", request.Image, "")
 	if err != nil {
 		return
 	}
