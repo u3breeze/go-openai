@@ -13,6 +13,7 @@ import (
 type FormBuilder interface {
 	CreateFormFile(fieldname string, file *os.File) error
 	CreateFormFileReader(fieldname string, r io.Reader, filename string) error
+	CreateFormFileReaderWithContentType(fieldname string, r io.Reader, filename string, contentType string) error // 新增方法
 	WriteField(fieldname, value string) error
 	Close() error
 	FormDataContentType() string
@@ -93,4 +94,18 @@ func (fb *DefaultFormBuilder) Close() error {
 
 func (fb *DefaultFormBuilder) FormDataContentType() string {
 	return fb.writer.FormDataContentType()
+}
+
+func (f *DefaultFormBuilder) CreateFormFileReaderWithContentType(fieldName string, reader io.Reader, filename string, contentType string) error {
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, fieldName, filename))
+	h.Set("Content-Type", contentType)
+
+	part, err := f.writer.CreatePart(h)
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(part, reader)
+	return err
 }

@@ -146,21 +146,107 @@ type ImageEditRequest struct {
 	User    string `json:"user,omitempty"`
 }
 
+type FileWithMetadata struct {
+	Data        io.Reader
+	Name        string
+	ContentType string
+}
+
+// Read 实现 io.Reader 接口
+func (f *FileWithMetadata) Read(p []byte) (n int, err error) {
+	return f.Data.Read(p)
+}
+
 // CreateEditImage - API call to create an image. This is the main endpoint of the DALL-E API.
+//func (c *Client) CreateEditImage(ctx context.Context, request ImageEditRequest) (response ImageResponse, err error) {
+//	body := &bytes.Buffer{}
+//	builder := c.createFormBuilder(body)
+//
+//	// image, filename is not required
+//	err = builder.CreateFormFileReader("image", request.Image, "")
+//	if err != nil {
+//		return
+//	}
+//
+//	// mask, it is optional
+//	if request.Mask != nil {
+//		// mask, filename is not required
+//		err = builder.CreateFormFileReader("mask", request.Mask, "")
+//		if err != nil {
+//			return
+//		}
+//	}
+//
+//	err = builder.WriteField("prompt", request.Prompt)
+//	if err != nil {
+//		return
+//	}
+//
+//	err = builder.WriteField("n", strconv.Itoa(request.N))
+//	if err != nil {
+//		return
+//	}
+//
+//	err = builder.WriteField("size", request.Size)
+//	if err != nil {
+//		return
+//	}
+//
+//	err = builder.WriteField("background", request.Background)
+//	if err != nil {
+//		return
+//	}
+//	//err = builder.WriteField("response_format", request.ResponseFormat)
+//	//if err != nil {
+//	//	return
+//	//}
+//
+//	err = builder.Close()
+//	if err != nil {
+//		return
+//	}
+//
+//	req, err := c.newRequest(
+//		ctx,
+//		http.MethodPost,
+//		c.fullURL("/images/edits", withModel(request.Model)),
+//		withBody(body),
+//		withContentType(builder.FormDataContentType()),
+//	)
+//	if err != nil {
+//		return
+//	}
+//
+//	err = c.sendRequest(req, &response)
+//	return
+//}
+
 func (c *Client) CreateEditImage(ctx context.Context, request ImageEditRequest) (response ImageResponse, err error) {
 	body := &bytes.Buffer{}
 	builder := c.createFormBuilder(body)
 
-	// image, filename is not required
-	err = builder.CreateFormFileReader("image", request.Image, "")
+	// 处理图片上传，支持 FileWithMetadata 类型
+	if fileWithMeta, ok := request.Image.(*FileWithMetadata); ok {
+		// 如果提供了带元数据的文件，使用带内容类型的方法
+		err = builder.CreateFormFileReaderWithContentType("image", fileWithMeta.Data, fileWithMeta.Name, fileWithMeta.ContentType)
+	} else {
+		// 否则使用默认方法
+		// 注意：filename可以为空字符串
+		err = builder.CreateFormFileReader("image", request.Image, "")
+	}
 	if err != nil {
 		return
 	}
 
-	// mask, it is optional
+	// 处理掩码图片上传
 	if request.Mask != nil {
-		// mask, filename is not required
-		err = builder.CreateFormFileReader("mask", request.Mask, "")
+		if maskWithMeta, ok := request.Mask.(*FileWithMetadata); ok {
+			// 如果提供了带元数据的掩码文件
+			err = builder.CreateFormFileReaderWithContentType("mask", maskWithMeta.Data, maskWithMeta.Name, maskWithMeta.ContentType)
+		} else {
+			// 否则使用默认方法
+			err = builder.CreateFormFileReader("mask", request.Mask, "")
+		}
 		if err != nil {
 			return
 		}
@@ -181,10 +267,20 @@ func (c *Client) CreateEditImage(ctx context.Context, request ImageEditRequest) 
 		return
 	}
 
-	err = builder.WriteField("background", request.Background)
-	if err != nil {
-		return
+	if request.Background != "" {
+		err = builder.WriteField("background", request.Background)
+		if err != nil {
+			return
+		}
 	}
+
+	if request.Quality != "" {
+		err = builder.WriteField("quality", request.Quality)
+		if err != nil {
+			return
+		}
+	}
+
 	//err = builder.WriteField("response_format", request.ResponseFormat)
 	//if err != nil {
 	//	return
