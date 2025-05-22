@@ -134,13 +134,13 @@ func (c *Client) CreateImage(ctx context.Context, request ImageRequest) (respons
 
 // ImageEditRequest represents the request structure for the image API.
 type ImageEditRequest struct {
-	Image      io.Reader `json:"image,omitempty"`
-	Mask       io.Reader `json:"mask,omitempty"`
-	Prompt     string    `json:"prompt,omitempty"`
-	Background string    `json:"background,omitempty"`
-	Model      string    `json:"model,omitempty"`
-	N          int       `json:"n,omitempty"`
-	Size       string    `json:"size,omitempty"`
+	Image      []io.Reader `json:"image,omitempty"`
+	Mask       io.Reader   `json:"mask,omitempty"`
+	Prompt     string      `json:"prompt,omitempty"`
+	Background string      `json:"background,omitempty"`
+	Model      string      `json:"model,omitempty"`
+	N          int         `json:"n,omitempty"`
+	Size       string      `json:"size,omitempty"`
 	//ResponseFormat string    `json:"response_format,omitempty"`
 	Quality string `json:"quality,omitempty"`
 	User    string `json:"user,omitempty"`
@@ -225,17 +225,22 @@ func (c *Client) CreateEditImage(ctx context.Context, request ImageEditRequest) 
 	body := &bytes.Buffer{}
 	builder := c.createFormBuilder(body)
 
-	// 处理图片上传，支持 FileWithMetadata 类型
-	if fileWithMeta, ok := request.Image.(*FileWithMetadata); ok {
-		// 如果提供了带元数据的文件，使用带内容类型的方法
-		err = builder.CreateFormFileReaderWithContentType("image", fileWithMeta.Data, fileWithMeta.Name, fileWithMeta.ContentType)
-	} else {
-		// 否则使用默认方法
-		// 注意：filename可以为空字符串
-		err = builder.CreateFormFileReader("image", request.Image, "")
-	}
-	if err != nil {
-		return
+	// 处理多张图片上传
+	for i, img := range request.Image {
+		fieldName := "image"
+		if i > 0 {
+			fieldName = fieldName + strconv.Itoa(i) // 如果有多个图片文件，可以按需命名如 image1, image2...
+		}
+
+		// 支持 FileWithMetadata 类型
+		if fileWithMeta, ok := img.(*FileWithMetadata); ok {
+			err = builder.CreateFormFileReaderWithContentType(fieldName, fileWithMeta.Data, fileWithMeta.Name, fileWithMeta.ContentType)
+		} else {
+			err = builder.CreateFormFileReader(fieldName, img, "")
+		}
+		if err != nil {
+			return
+		}
 	}
 
 	// 处理掩码图片上传
