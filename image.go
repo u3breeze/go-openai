@@ -227,7 +227,7 @@ func (c *Client) CreateEditImage(ctx context.Context, request ImageEditRequest) 
 
 	// 处理多张图片上传
 	for i, img := range request.Image {
-		fieldName := "image"
+		fieldName := "image[]"
 		if i > 0 {
 			fieldName = fieldName + strconv.Itoa(i) // 如果有多个图片文件，可以按需命名如 image1, image2...
 		}
