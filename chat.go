@@ -83,6 +83,22 @@ const (
 type paramObj = param.APIObject
 type paramUnion = param.APIUnion
 
+type ChatCompletionImage struct {
+	ImageURL struct {
+		Url string `json:"url"`
+	} `json:"image_url,omitempty"`
+	JSON struct {
+		ImageURL resp.Field
+		raw      string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ChatCompletionImage) RawJSON() string { return r.JSON.raw }
+func (r *ChatCompletionImage) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // If the audio output modality is requested, this object contains data about the
 // audio response from the model.
 // [Learn more](https://platform.openai.com/docs/guides/audio).
@@ -206,7 +222,7 @@ type ChatCompletionMessage struct {
 	Refusal      string `json:"refusal,omitempty"`
 	MultiContent []ChatMessagePart
 
-	Images []ChatMessageImageURL `json:"images,omitempty"`
+	Images []ChatCompletionImage `json:"images,omitempty"`
 	Video  []string              `json:"video,omitempty"`
 	Audio  *ChatCompletionAudio  `json:"audio,omitempty"`
 
@@ -241,7 +257,7 @@ func (m ChatCompletionMessage) MarshalJSON() ([]byte, error) {
 			Content          string                `json:"-"`
 			Refusal          string                `json:"refusal,omitempty"`
 			MultiContent     []ChatMessagePart     `json:"content,omitempty"`
-			Images           []ChatMessageImageURL `json:"images,omitempty"`
+			Images           []ChatCompletionImage `json:"images,omitempty"`
 			Video            []string              `json:"video,omitempty"`
 			Audio            *ChatCompletionAudio  `json:"audio,omitempty"`
 			Name             string                `json:"name,omitempty"`
@@ -258,7 +274,7 @@ func (m ChatCompletionMessage) MarshalJSON() ([]byte, error) {
 		Content          string                `json:"content,omitempty"`
 		Refusal          string                `json:"refusal,omitempty"`
 		MultiContent     []ChatMessagePart     `json:"-"`
-		Images           []ChatMessageImageURL `json:"images,omitempty"`
+		Images           []ChatCompletionImage `json:"images,omitempty"`
 		Video            []string              `json:"video,omitempty"`
 		Audio            *ChatCompletionAudio  `json:"audio,omitempty"`
 		Name             string                `json:"name,omitempty"`
@@ -276,7 +292,7 @@ func (m *ChatCompletionMessage) UnmarshalJSON(bs []byte) error {
 		Content          string `json:"content"`
 		Refusal          string `json:"refusal,omitempty"`
 		MultiContent     []ChatMessagePart
-		Images           []ChatMessageImageURL `json:"images,omitempty"`
+		Images           []ChatCompletionImage `json:"images,omitempty"`
 		Video            []string              `json:"video,omitempty"`
 		Audio            *ChatCompletionAudio  `json:"audio,omitempty"`
 		Name             string                `json:"name,omitempty"`
@@ -295,7 +311,7 @@ func (m *ChatCompletionMessage) UnmarshalJSON(bs []byte) error {
 		Content          string
 		Refusal          string                `json:"refusal,omitempty"`
 		MultiContent     []ChatMessagePart     `json:"content"`
-		Images           []ChatMessageImageURL `json:"images,omitempty"`
+		Images           []ChatCompletionImage `json:"images,omitempty"`
 		Video            []string              `json:"video,omitempty"`
 		Audio            *ChatCompletionAudio  `json:"audio,omitempty"`
 		Name             string                `json:"name,omitempty"`
