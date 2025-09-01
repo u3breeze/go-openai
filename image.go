@@ -265,12 +265,13 @@ func (c *Client) CreateEditImage(ctx context.Context, request ImageEditRequest) 
 		}
 	}
 
-	// 处理掩码图片上传
+	// mask, it is optional
 	if request.Mask != nil {
 		if maskWithMeta, ok := request.Mask.(*FileWithMetadata); ok {
 			// 如果提供了带元数据的掩码文件
 			err = builder.CreateFormFileReaderWithContentType("mask", maskWithMeta.Data, maskWithMeta.Name, maskWithMeta.ContentType)
 		} else {
+			// filename verification can be postponed
 			// 否则使用默认方法
 			err = builder.CreateFormFileReader("mask", request.Mask, "")
 		}
