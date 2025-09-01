@@ -272,7 +272,6 @@ func (c *Client) CreateEditImage(ctx context.Context, request ImageEditRequest) 
 			err = builder.CreateFormFileReaderWithContentType("mask", maskWithMeta.Data, maskWithMeta.Name, maskWithMeta.ContentType)
 		} else {
 			// filename verification can be postponed
-			// 否则使用默认方法
 			err = builder.CreateFormFileReader("mask", request.Mask, "")
 		}
 		if err != nil {
